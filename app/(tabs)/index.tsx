@@ -3,7 +3,7 @@ import React from "react";
 import { styles } from "@/styles/feed.styles";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "@/constants/theme";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-expo";
 import { STORIES } from "@/constants/mock-data";
 import StoryComp from "@/components/Story";
 import { useQuery } from "convex/react";
@@ -41,9 +41,9 @@ const IndexPage = () => {
           showsHorizontalScrollIndicator={false}
           style={styles.storiesContainer}
         >
-          {STORIES.map((story) => (
+          {/* {STORIES.map((story) => (
             <StoryComp key={story.id} story={story} />
-          ))}
+          ))} */}
 
           {posts.map((post) => (
             <Post key={post._id} post={post} />

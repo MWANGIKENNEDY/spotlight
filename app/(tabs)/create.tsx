@@ -48,7 +48,10 @@ export default function Create() {
     try {
       setIsSharing(true);
       const uploadUrl = await generateUploadUrl();
-      const uploadResult = await FileSystem.uploadAsync(
+
+      console.log("upload url is ",uploadUrl)
+      
+      const uploadResult = await FileSystem.Directory.uploadAsync(
         uploadUrl,
         selectedImage,
         {

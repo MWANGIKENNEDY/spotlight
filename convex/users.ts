@@ -36,6 +36,7 @@ export const createUser = mutation({
 
 export async function getAuthenticatedUser(ctx: QueryCtx | MutationCtx) {
   const identity = await ctx.auth.getUserIdentity();
+
   if (!identity) throw new Error("Unauthorized!");
 
   const currentUser = await ctx.db

@@ -4,6 +4,7 @@ import { ClerkLoaded, ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import InitialLayout from "@/components/initialLayout";
 import MyConvexProvider from "@/providers/convexProvider";
+import ClerkAndConvexProvider from "@/providers/convexProvider";
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
@@ -13,16 +14,12 @@ if (!publishableKey) {
 
 export default function RootLayout() {
   return (
-    <MyConvexProvider>
-      <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-        <ClerkLoaded>
-          <SafeAreaProvider>
-            <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
-              <InitialLayout />
-            </SafeAreaView>
-          </SafeAreaProvider>
-        </ClerkLoaded>
-      </ClerkProvider>
-    </MyConvexProvider>
+    <ClerkAndConvexProvider>
+      <SafeAreaProvider>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+          <InitialLayout />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    </ClerkAndConvexProvider>
   );
 }
