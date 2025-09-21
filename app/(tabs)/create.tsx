@@ -7,28 +7,26 @@ import {
   ActivityIndicator,
   ScrollView,
   TextInput,
-} from "react-native";
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
-import { useUser } from "@clerk/clerk-expo";
-import { styles } from "@/styles/create.styles";
-import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "@/constants/theme";
-import * as ImagePicker from "expo-image-picker";
-import * as FileSystem from "expo-file-system";
-import { Image } from "expo-image";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-
-export default function Create() {
+ } from "react-native";
+ import React, { useState } from "react";
+ import { useRouter } from "expo-router";
+ import { useUser } from "@clerk/clerk-expo";
+ import { styles } from "@/styles/create.styles";
+ import { Ionicons } from "@expo/vector-icons";
+ import { COLORS } from "@/constants/theme";
+ import * as ImagePicker from "expo-image-picker";
+ import { Image } from "expo-image";
+ import { useMutation } from "convex/react";
+ import { api } from "@/convex/_generated/api";
+ 
+ export default function Create() {
   const router = useRouter();
-
   const { user } = useUser();
-
+ 
   const [caption, setCaption] = useState("");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isSharing, setIsSharing] = useState(false);
-
+ 
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: "images",
@@ -36,48 +34,53 @@ export default function Create() {
       aspect: [1, 1],
       quality: 0.8,
     });
-
+ 
     if (!result.canceled) setSelectedImage(result.assets[0].uri);
   };
-
+ 
   const generateUploadUrl = useMutation(api.posts.generateUploadUrl);
   const createPost = useMutation(api.posts.createPost);
-
+ 
   const handleShare = async () => {
     if (!selectedImage) return;
     try {
       setIsSharing(true);
+ 
       const uploadUrl = await generateUploadUrl();
-
-      console.log("upload url is ",uploadUrl)
-      
-      const uploadResult = await FileSystem.Directory.uploadAsync(
-        uploadUrl,
-        selectedImage,
-        {
-          httpMethod: "POST",
-          uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
-          mimeType: "image/jpeg",
-        }
-      );
-
-      if (uploadResult.status !== 200) throw new Error("Upload failed!");
-
-      const { storageId } = JSON.parse(uploadResult.body);
-
+ 
+      // Prepare form data
+      const formData = new FormData();
+      formData.append("file", {
+        uri: selectedImage,
+        name: "upload.jpg",
+        type: "image/jpeg",
+      } as any);
+ 
+      const response = await fetch(uploadUrl, {
+        method: "POST",
+        body: formData,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+ 
+      if (!response.ok) throw new Error("Upload failed!");
+ 
+      const { storageId } = await response.json();
+ 
       await createPost({
         storageId,
         caption,
       });
-
+ 
       router.push("/(tabs)");
     } catch (error) {
-      console.log("error uploading file !");
+      console.log("error uploading file !", error);
     } finally {
       setIsSharing(false);
     }
   };
-
+ 
   if (!selectedImage) {
     return (
       <View style={styles.container}>
@@ -85,11 +88,11 @@ export default function Create() {
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={28} color={COLORS.primary} />
           </TouchableOpacity>
-
+ 
           <Text style={styles.headerTitle}>New Post</Text>
           <View style={{ width: 28 }} />
         </View>
-
+ 
         <TouchableOpacity
           style={styles.emptyImageContainer}
           onPress={pickImage}
@@ -100,7 +103,7 @@ export default function Create() {
       </View>
     );
   }
-
+ 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -122,14 +125,11 @@ export default function Create() {
               color={isSharing ? COLORS.grey : COLORS.white}
             />
           </TouchableOpacity>
-
+ 
           <Text style={styles.headerTitle}>New Post</Text>
-
+ 
           <TouchableOpacity
-            style={[
-              styles.shareButton,
-              isSharing && styles.shareButtonDisabled,
-            ]}
+            style={[styles.shareButton, isSharing && styles.shareButtonDisabled]}
             disabled={isSharing || !selectedImage}
             onPress={handleShare}
           >
@@ -140,7 +140,7 @@ export default function Create() {
             )}
           </TouchableOpacity>
         </View>
-
+ 
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           bounces={false}
@@ -154,8 +154,8 @@ export default function Create() {
                 style={styles.previewImage}
                 contentFit="cover"
                 transition={200}
-              ></Image>
-
+              />
+ 
               <TouchableOpacity
                 style={styles.changeImageButton}
                 onPress={pickImage}
@@ -165,8 +165,8 @@ export default function Create() {
                 <Text style={styles.changeImageText}>Change</Text>
               </TouchableOpacity>
             </View>
-            {/* comment/input section */}
-
+ 
+            {/* caption section */}
             <View style={styles.inputSection}>
               <View style={styles.captionContainer}>
                 <Image
@@ -174,8 +174,8 @@ export default function Create() {
                   style={styles.userAvatar}
                   contentFit="cover"
                   transition={200}
-                ></Image>
-
+                />
+ 
                 <TextInput
                   style={styles.captionInput}
                   placeholder="Write a caption"
@@ -192,7 +192,4 @@ export default function Create() {
       </View>
     </KeyboardAvoidingView>
   );
-}
-
-
-
+ }
