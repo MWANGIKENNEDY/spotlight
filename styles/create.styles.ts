@@ -6,8 +6,11 @@ const { width } = Dimensions.get("window");
 
 export const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
+    flexGrow: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 40,
+    backgroundColor: "#fff",
   },
   contentContainer: {
     flex: 1,
